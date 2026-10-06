@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Glacier
+Description=Dark slate boot splash with the Glacier hex logo
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/glacier
+ScriptFile=/usr/share/plymouth/themes/glacier/glacier.script

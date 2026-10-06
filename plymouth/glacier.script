@@ -1,0 +1,95 @@
+// Glacier boot splash for Plymouth's script plugin.
+// Dark slate background, the hex logo, and a thin ice-blue line that runs
+// back and forth while the system boots. Shows the password prompt for
+// encrypted disks and any boot messages in dim text.
+
+Window.SetBackgroundTopColor(0.043, 0.059, 0.086);
+Window.SetBackgroundBottomColor(0.043, 0.059, 0.086);
+
+screen.w = Window.GetWidth();
+screen.h = Window.GetHeight();
+screen.x = Window.GetX();
+screen.y = Window.GetY();
+scale = screen.h / 1080;
+if (scale < 1) scale = 1;
+
+logo.image = Image("logo.png").Scale(96 * scale, 96 * scale);
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(screen.x + screen.w / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(screen.y + screen.h / 2 - logo.image.GetHeight() / 2 - 40 * scale);
+
+track.image = Image("track.png").Scale(180 * scale, 2 * scale);
+track.sprite = Sprite(track.image);
+track.x = screen.x + screen.w / 2 - track.image.GetWidth() / 2;
+track.y = logo.sprite.GetY() + logo.image.GetHeight() + 36 * scale;
+track.sprite.SetX(track.x);
+track.sprite.SetY(track.y);
+
+runner.image = Image("runner.png").Scale(60 * scale, 2 * scale);
+runner.sprite = Sprite(runner.image);
+runner.sprite.SetY(track.y);
+runner.sprite.SetZ(1);
+runner.span = track.image.GetWidth() - runner.image.GetWidth();
+runner.pos = 0;
+runner.dir = 1;
+
+fun refresh_callback() {
+    // ~50 calls per second
+    runner.pos += runner.dir * 2.2 * scale;
+    if (runner.pos >= runner.span) { runner.pos = runner.span; runner.dir = -1; }
+    if (runner.pos <= 0) { runner.pos = 0; runner.dir = 1; }
+    runner.sprite.SetX(track.x + runner.pos);
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+// ---- text helpers ----------------------------------------------------------
+fun text_sprite(text, r, g, b, y) {
+    img = Image.Text(text, r, g, b, 1, "IBM Plex Mono");
+    s = Sprite(img);
+    s.SetX(screen.x + screen.w / 2 - img.GetWidth() / 2);
+    s.SetY(y);
+    s.SetZ(2);
+    return s;
+}
+
+// ---- password prompt (encrypted disks) ----------------------------------------
+prompt.sprite = NULL;
+bullets.sprite = NULL;
+
+fun display_password_callback(prompt_text, bullet_count) {
+    if (prompt.sprite) { prompt.sprite = NULL; }
+    if (bullets.sprite) { bullets.sprite = NULL; }
+    track.sprite.SetOpacity(0);
+    runner.sprite.SetOpacity(0);
+    prompt.sprite = text_sprite(prompt_text, 0.486, 0.545, 0.639, track.y - 4 * scale);
+    dots = "";
+    for (i = 0; i < bullet_count; i++) dots += "• ";
+    bullets.sprite = text_sprite(dots, 0.847, 0.882, 0.933, track.y + 22 * scale);
+}
+
+fun display_normal_callback() {
+    prompt.sprite = NULL;
+    bullets.sprite = NULL;
+    track.sprite.SetOpacity(1);
+    runner.sprite.SetOpacity(1);
+}
+
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+
+// ---- boot messages (fsck, errors) --------------------------------------------
+message.sprite = NULL;
+
+fun message_callback(text) {
+    message.sprite = text_sprite(text, 0.486, 0.545, 0.639, screen.y + screen.h - 60 * scale);
+}
+fun hide_message_callback(text) {
+    message.sprite = NULL;
+}
+Plymouth.SetMessageFunction(message_callback);
+Plymouth.SetHideMessageFunction(hide_message_callback);
+
+fun quit_callback() {
+    runner.sprite.SetOpacity(0);
+}
+Plymouth.SetQuitFunction(quit_callback);
