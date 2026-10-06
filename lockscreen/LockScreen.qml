@@ -147,6 +147,7 @@ Item {
             tearColor: root.ice
             u: root.u
             every: 30000
+            onTornChanged: if (torn) mark.flash()
             font.family: "IBM Plex Sans"
             font.weight: Font.Light
             font.pixelSize: 112 * root.u
@@ -308,6 +309,7 @@ Item {
     }
 
     DeadframeMark {
+        id: mark
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 32 * root.u
@@ -435,17 +437,24 @@ Item {
             opacity: 0
         }
 
+        // a dead frame: one letter drops out and the missing corner lights up
+        function flash() {
+            const i = 1 + Math.floor(Math.random() * 7);
+            label.text = "DEADFRAME".substring(0, i) + " " + "DEADFRAME".substring(i + 1);
+            corner.opacity = 1;
+            off.restart();
+        }
+
         Timer {
             running: true
             repeat: true
             interval: dm.every * (0.5 + Math.random())
             onTriggered: {
                 interval = dm.every * (0.5 + Math.random());
-                corner.opacity = 1;
-                off.restart();
+                dm.flash();
             }
         }
 
-        Timer { id: off; interval: 120; onTriggered: corner.opacity = 0 }
+        Timer { id: off; interval: 120; onTriggered: { corner.opacity = 0; label.text = "DEADFRAME" } }
     }
 }

@@ -63,6 +63,7 @@ Rectangle {
             tearColor: root.ice
             u: root.u
             every: 30000
+            onTornChanged: if (torn) mark.flash()
             font.family: "IBM Plex Sans"
             font.weight: Font.Light
             font.pixelSize: 112 * root.u
@@ -251,6 +252,7 @@ Rectangle {
     }
 
     DeadframeMark {
+        id: mark
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 32 * root.u

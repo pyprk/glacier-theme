@@ -45,16 +45,23 @@ Item {
         opacity: 0
     }
 
+    // a dead frame: one letter drops out and the missing corner lights up
+    function flash() {
+        const i = 1 + Math.floor(Math.random() * 7);
+        label.text = "DEADFRAME".substring(0, i) + " " + "DEADFRAME".substring(i + 1);
+        corner.opacity = 1;
+        off.restart();
+    }
+
     Timer {
         running: true
         repeat: true
         interval: root.every * (0.5 + Math.random())
         onTriggered: {
             interval = root.every * (0.5 + Math.random());
-            corner.opacity = 1;
-            off.restart();
+            root.flash();
         }
     }
 
-    Timer { id: off; interval: 120; onTriggered: corner.opacity = 0 }
+    Timer { id: off; interval: 120; onTriggered: { corner.opacity = 0; label.text = "DEADFRAME" } }
 }

@@ -53,12 +53,33 @@ PlasmoidItem {
             anchors.leftMargin: 16
             spacing: 0
 
-            Text {
-                text: "SERVERS"
-                color: Kirigami.Theme.disabledTextColor
-                font.family: "IBM Plex Mono"
-                font.pixelSize: 12
-                font.letterSpacing: 2
+            RowLayout {
+                spacing: 10
+
+                Text {
+                    text: "DEADFRAME"
+                    color: Kirigami.Theme.textColor
+                    font.family: "IBM Plex Mono"
+                    font.pixelSize: 12
+                    font.letterSpacing: 2
+                }
+
+                Text {
+                    text: "·  SERVERS"
+                    color: Kirigami.Theme.disabledTextColor
+                    font.family: "IBM Plex Mono"
+                    font.pixelSize: 12
+                    font.letterSpacing: 2
+                }
+
+                Item { Layout.fillWidth: true }
+
+                Text {
+                    text: "deadframe.xyz"
+                    color: Kirigami.Theme.disabledTextColor
+                    font.family: "IBM Plex Mono"
+                    font.pixelSize: 11
+                }
             }
 
             Rectangle {
