@@ -6,6 +6,8 @@ login screen, splash, Konsole profile, bash prompt and fastfetch banner.
 
     ./install.sh                 # link into ~/.local/share and apply
     sudo ./install-login.sh      # SDDM login screen
+    sudo ./install-lockscreen.sh # lock screen (replaces Plasma's, via dpkg-divert)
+    sudo ./install-plymouth.sh   # boot splash (rebuilds the initramfs)
 
 | Path | What |
 |---|---|
@@ -14,6 +16,8 @@ login screen, splash, Konsole profile, bash prompt and fastfetch banner.
 | `live/` | animated wallpaper plugin: `gen.py` makes the field texture + shader, `build.sh` compiles it |
 | `plasma/` | widgets (`hud`, `servers`), live wallpaper plugin, global theme package |
 | `sddm/` | login screen theme |
+| `lockscreen/` | lock screen, same layout as the login screen |
+| `plymouth/` | boot splash: `render.py` draws the images, `glacier.script` animates them |
 | `shell/` | bash prompt, fastfetch config, example server list |
 | `apply.sh` | re-applies everything to the running session |
 

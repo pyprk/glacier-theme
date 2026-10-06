@@ -1,95 +1,243 @@
-// Glacier boot splash for Plymouth's script plugin.
-// Dark slate background, the hex logo, and a thin ice-blue line that runs
-// back and forth while the system boots. Shows the password prompt for
-// encrypted disks and any boot messages in dim text.
+# Glacier boot splash: black screen, hex logo, thin progress line.
+# Images come from render.py. Installed by install-plymouth.sh.
 
-Window.SetBackgroundTopColor(0.043, 0.059, 0.086);
+Window.SetBackgroundTopColor(0.043, 0.059, 0.086);     # #0b0f16
 Window.SetBackgroundBottomColor(0.043, 0.059, 0.086);
 
-screen.w = Window.GetWidth();
-screen.h = Window.GetHeight();
-screen.x = Window.GetX();
-screen.y = Window.GetY();
-scale = screen.h / 1080;
-if (scale < 1) scale = 1;
+mode = Plymouth.GetMode();                               # boot, shutdown, reboot, updates ...
+booting = (mode == "boot");
 
-logo.image = Image("logo.png").Scale(96 * scale, 96 * scale);
+cx = Window.GetX() + Window.GetWidth() / 2;
+cy = Window.GetY() + Window.GetHeight() / 2;
+
+# ---- logo ---------------------------------------------------------------
+
+logo.image = Image("logo.png");
 logo.sprite = Sprite(logo.image);
-logo.sprite.SetX(screen.x + screen.w / 2 - logo.image.GetWidth() / 2);
-logo.sprite.SetY(screen.y + screen.h / 2 - logo.image.GetHeight() / 2 - 40 * scale);
+logo.x = cx - logo.image.GetWidth() / 2;
+logo.y = cy - logo.image.GetHeight() / 2 - 28;
+logo.sprite.SetPosition(logo.x, logo.y, 10);
+logo.sprite.SetOpacity(0);
 
-track.image = Image("track.png").Scale(180 * scale, 2 * scale);
+# ---- progress line ------------------------------------------------------
+
+track.image = Image("track.png");
 track.sprite = Sprite(track.image);
-track.x = screen.x + screen.w / 2 - track.image.GetWidth() / 2;
-track.y = logo.sprite.GetY() + logo.image.GetHeight() + 36 * scale;
-track.sprite.SetX(track.x);
-track.sprite.SetY(track.y);
+track.w = track.image.GetWidth();
+track.x = cx - track.w / 2;
+track.y = logo.y + logo.image.GetHeight() + 48;
+track.sprite.SetPosition(track.x, track.y, 11);
 
-runner.image = Image("runner.png").Scale(60 * scale, 2 * scale);
-runner.sprite = Sprite(runner.image);
-runner.sprite.SetY(track.y);
-runner.sprite.SetZ(1);
-runner.span = track.image.GetWidth() - runner.image.GetWidth();
-runner.pos = 0;
-runner.dir = 1;
+bar.image = Image("bar.png");
+bar.sprite = Sprite();
+bar.sprite.SetPosition(track.x, track.y, 12);
+bar.shown = 0;
 
-fun refresh_callback() {
-    // ~50 calls per second
-    runner.pos += runner.dir * 2.2 * scale;
-    if (runner.pos >= runner.span) { runner.pos = runner.span; runner.dir = -1; }
-    if (runner.pos <= 0) { runner.pos = 0; runner.dir = 1; }
-    runner.sprite.SetX(track.x + runner.pos);
-}
+fun set_bar(fraction, offset)
+  {
+    w = Math.Int(track.w * fraction);
+    if (w < 1) w = 1;
+    if (w != bar.shown)
+      {
+        bar.sprite.SetImage(bar.image.Scale(w, bar.image.GetHeight()));
+        bar.shown = w;
+      }
+    bar.sprite.SetX(track.x + Math.Int(offset));
+  }
+
+set_bar(0.01, 0);
+
+# ---- animation ----------------------------------------------------------
+
+frame = 0;
+progress = 0;
+status = "normal";
+
+fun refresh_callback()
+  {
+    frame++;
+    fade = frame / 25;                                   # ~0.5 s fade-in at 50 Hz
+    if (fade > 1) fade = 1;
+    logo.sprite.SetOpacity(fade);
+    track.sprite.SetOpacity(fade);
+    bar.sprite.SetOpacity(fade);
+
+    # messages fade out on their own if nothing refreshes them for ~8 s
+    if (message.shown_at && frame - message.shown_at > 400)
+      {
+        message.sprite.SetOpacity(0);
+        message.shown_at = 0;
+      }
+
+    if (booting)
+      {
+        set_bar(progress, 0);
+      }
+    else
+      {
+        # shutdown / reboot: a short runner sweeping along the track
+        span = track.w * 0.25;
+        t = (frame % 90) / 90;
+        set_bar(0.25, (track.w - span) * (0.5 - 0.5 * Math.Cos(t * 2 * 3.14159)));
+      }
+  }
+
+fun progress_callback(duration, fraction)
+  {
+    progress = fraction;
+  }
+
 Plymouth.SetRefreshFunction(refresh_callback);
+Plymouth.SetBootProgressFunction(progress_callback);
 
-// ---- text helpers ----------------------------------------------------------
-fun text_sprite(text, r, g, b, y) {
-    img = Image.Text(text, r, g, b, 1, "IBM Plex Mono");
-    s = Sprite(img);
-    s.SetX(screen.x + screen.w / 2 - img.GetWidth() / 2);
-    s.SetY(y);
-    s.SetZ(2);
-    return s;
-}
+# ---- messages (fsck, errors) -------------------------------------------
 
-// ---- password prompt (encrypted disks) ----------------------------------------
-prompt.sprite = NULL;
-bullets.sprite = NULL;
+message.sprite = Sprite();
+message.sprite.SetPosition(0, 0, 20);
+message.sprite.SetOpacity(0);
+message.shown_at = 0;
 
-fun display_password_callback(prompt_text, bullet_count) {
-    if (prompt.sprite) { prompt.sprite = NULL; }
-    if (bullets.sprite) { bullets.sprite = NULL; }
-    track.sprite.SetOpacity(0);
-    runner.sprite.SetOpacity(0);
-    prompt.sprite = text_sprite(prompt_text, 0.486, 0.545, 0.639, track.y - 4 * scale);
-    dots = "";
-    for (i = 0; i < bullet_count; i++) dots += "• ";
-    bullets.sprite = text_sprite(dots, 0.847, 0.882, 0.933, track.y + 22 * scale);
-}
+fun show_message(text)
+  {
+    image = Image.Text(text, 0.49, 0.55, 0.64);          # #7c8ba3
+    message.sprite.SetImage(image);
+    message.sprite.SetPosition(cx - image.GetWidth() / 2, track.y + 24, 20);
+    message.shown_at = frame;
+    if (status == "normal")
+      message.sprite.SetOpacity(1);
+    else
+      message.sprite.SetOpacity(0);
+  }
 
-fun display_normal_callback() {
-    prompt.sprite = NULL;
-    bullets.sprite = NULL;
-    track.sprite.SetOpacity(1);
-    runner.sprite.SetOpacity(1);
-}
+fun starts_with(text, prefix)
+  {
+    s = String(text);
+    p = String(prefix);
+    for (i = 0; p.CharAt(i); i++)
+      if (s.CharAt(i) != p.CharAt(i)) return 0;
+    return 1;
+  }
 
-Plymouth.SetDisplayPasswordFunction(display_password_callback);
-Plymouth.SetDisplayNormalFunction(display_normal_callback);
+fun after(text, prefix)                                  # text with prefix removed
+  {
+    s = String(text);
+    p = String(prefix);
+    out = "";
+    for (n = 0; p.CharAt(n); n++) { }
+    for (i = n; s.CharAt(i); i++)
+      out += s.CharAt(i);
+    return out;
+  }
 
-// ---- boot messages (fsck, errors) --------------------------------------------
-message.sprite = NULL;
+fun display_message_callback(text)
+  {
+    # systemd-fsckd sends "fsckd-cancel-msg:Press Ctrl+C to cancel ..."
+    if (starts_with(text, "fsckd-cancel-msg:"))
+      text = after(text, "fsckd-cancel-msg:");
+    show_message(text);
+  }
 
-fun message_callback(text) {
-    message.sprite = text_sprite(text, 0.486, 0.545, 0.639, screen.y + screen.h - 60 * scale);
-}
-fun hide_message_callback(text) {
-    message.sprite = NULL;
-}
-Plymouth.SetMessageFunction(message_callback);
+fun hide_message_callback(text)
+  {
+    message.sprite.SetOpacity(0);
+    message.shown_at = 0;
+  }
+
+# "fsck:<device>:<percent>" progress from systemd-fsckd
+fun update_status_callback(text)
+  {
+    if (!starts_with(text, "fsck:")) return;
+    rest = String(after(text, "fsck:"));
+    device = "";
+    percent = "";
+    seen_colon = 0;
+    for (i = 0; rest.CharAt(i); i++)
+      {
+        c = rest.CharAt(i);
+        if (c == ":")
+          seen_colon = 1;
+        else if (seen_colon)
+          percent += c;
+        else
+          device += c;
+      }
+    show_message("Checking " + device + "  " + percent + "%");
+  }
+
+Plymouth.SetDisplayMessageFunction(display_message_callback);
 Plymouth.SetHideMessageFunction(hide_message_callback);
+Plymouth.SetUpdateStatusFunction(update_status_callback);
 
-fun quit_callback() {
-    runner.sprite.SetOpacity(0);
-}
+# ---- password prompt (encrypted disks) ---------------------------------
+
+fun dialog_setup()
+  {
+    local.entry;
+    local.prompt;
+    entry.image = Image("entry.png");
+    entry.sprite = Sprite(entry.image);
+    entry.x = cx - entry.image.GetWidth() / 2;
+    entry.y = track.y + 24;
+    entry.sprite.SetPosition(entry.x, entry.y, 30);
+    global.dialog.entry = entry;
+    global.dialog.prompt = Sprite();
+    global.dialog.bullet_image = Image("bullet.png");
+  }
+
+fun dialog_opacity(opacity)
+  {
+    dialog.entry.sprite.SetOpacity(opacity);
+    dialog.prompt.SetOpacity(opacity);
+    for (i = 0; dialog.bullet[i]; i++)
+      dialog.bullet[i].sprite.SetOpacity(opacity);
+  }
+
+fun display_normal_callback()
+  {
+    global.status = "normal";
+    if (global.dialog)
+      dialog_opacity(0);
+  }
+
+fun display_password_callback(prompt, bullets)
+  {
+    global.status = "password";
+    message.sprite.SetOpacity(0);                        # entry box takes its place
+    if (!global.dialog)
+      dialog_setup();
+    else
+      dialog_opacity(1);
+
+    text = Image.Text(prompt, 0.49, 0.55, 0.64);
+    dialog.prompt.SetImage(text);
+    dialog.prompt.SetPosition(cx - text.GetWidth() / 2,
+                              dialog.entry.y + dialog.entry.image.GetHeight() + 14, 31);
+
+    step = dialog.bullet_image.GetWidth() + 6;
+    for (i = 0; dialog.bullet[i] || i < bullets; i++)
+      {
+        if (!dialog.bullet[i])
+          {
+            dialog.bullet[i].sprite = Sprite(dialog.bullet_image);
+            dialog.bullet[i].sprite.SetPosition(dialog.entry.x + 16 + i * step,
+                                                dialog.entry.y + dialog.entry.image.GetHeight() / 2
+                                                  - dialog.bullet_image.GetHeight() / 2, 31);
+          }
+        if (i < bullets)
+          dialog.bullet[i].sprite.SetOpacity(1);
+        else
+          dialog.bullet[i].sprite.SetOpacity(0);
+      }
+  }
+
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+
+# ---- quit ---------------------------------------------------------------
+
+fun quit_callback()
+  {
+    logo.sprite.SetOpacity(1);
+  }
+
 Plymouth.SetQuitFunction(quit_callback);

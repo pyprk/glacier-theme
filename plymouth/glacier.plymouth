@@ -1,6 +1,6 @@
 [Plymouth Theme]
 Name=Glacier
-Description=Dark slate boot splash with the Glacier hex logo
+Description=Black splash with the Glacier hex logo and a thin progress line
 ModuleName=script
 
 [script]
