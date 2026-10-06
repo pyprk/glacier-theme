@@ -82,10 +82,12 @@ _gl_prompt() {
     (( status != 0 )) && right+="${_GL_RED}✗ ${status}"
     [[ -n $dur ]] && right+="${right:+${_GL_DIM}  ·  }${_GL_DIM}${dur}"
 
-    local arrow=${_GL_ACCENT}
+    local arrow=${_GL_ACCENT} tip='❯'
     (( status != 0 )) && arrow=${_GL_RED}
+    # one prompt in twenty wears the dead frame's corner instead
+    (( RANDOM % 20 == 0 )) && { tip='⌝'; arrow=${_GL_DIM}; }
 
-    PS1="\n${left}${right:+   ${right}}${_GL_RESET}\n${arrow}❯ ${_GL_RESET}"
+    PS1="\n${left}${right:+   ${right}}${_GL_RESET}\n${arrow}${tip} ${_GL_RESET}"
     # window title
     PS1="\[\e]0;\w\a\]${PS1}"
 }

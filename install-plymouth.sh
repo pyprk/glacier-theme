@@ -9,7 +9,7 @@ SRC="$(cd "$(dirname "$0")" && pwd)/plymouth"
 DEST=/usr/share/plymouth/themes/glacier
 PLUGINS=/usr/lib/x86_64-linux-gnu/plymouth
 
-for f in glacier.plymouth glacier.script glacier.grub logo.png track.png bar.png entry.png bullet.png; do
+for f in glacier.plymouth glacier.script glacier.grub logo.png track.png bar.png entry.png bullet.png mark.png; do
     [ -f "$SRC/$f" ] || { echo "missing $SRC/$f (run plymouth/render.py)"; exit 1; }
 done
 command -v plymouth >/dev/null || { echo "plymouth is not installed."; exit 1; }

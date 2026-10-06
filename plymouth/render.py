@@ -9,6 +9,8 @@ SS = 8                                     # supersampling factor
 ACCENT = (86, 164, 245)
 TEXT = (216, 225, 238)
 TRACK = (28, 36, 50)
+DIM = (124, 139, 163)
+FONT = "/usr/share/fonts/truetype/ibm-plex/IBMPlexMono-Regular.ttf"   # fonts-ibm-plex
 
 
 def logo(size=112):
@@ -42,10 +44,36 @@ def dot(size, colour):
     return im.resize((size, size), Image.LANCZOS)
 
 
+def mark(size=10, spacing=3, pad=10):
+    """DEADFRAME: letter-spaced mono text in a frame missing its bottom-right corner."""
+    from PIL import ImageFont
+    font = ImageFont.truetype(FONT, size * SS)
+    text = "DEADFRAME"
+    adv = font.getlength("M")
+    step = adv + spacing * SS
+    tw = step * len(text) - spacing * SS
+    W = int(tw + 2 * pad * SS)
+    H = int(size * SS + 1.3 * pad * SS)
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    x = pad * SS
+    for ch in text:
+        d.text((x, H / 2), ch, font=font, fill=(*DIM, 235), anchor="lm")
+        x += step
+    f = (*DIM, 140)
+    lw = SS
+    d.rectangle([0, 0, W - 1, lw - 1], fill=f)                       # top
+    d.rectangle([0, 0, lw - 1, H - 1], fill=f)                       # left
+    d.rectangle([W - lw, 0, W - 1, H * 0.5], fill=f)                 # right, cut short
+    d.rectangle([0, H - lw, W * 0.7, H - 1], fill=f)                 # bottom, cut short
+    return im.resize((W // SS, H // SS), Image.LANCZOS)
+
+
 if __name__ == "__main__":
     logo().save(HERE / "logo.png")
     bar(240, 2, TRACK).save(HERE / "track.png")
     bar(240, 2, ACCENT).save(HERE / "bar.png")
     bar(240, 36, (*TRACK, 235), outline=(42, 53, 71, 255)).save(HERE / "entry.png")
     dot(8, TEXT).save(HERE / "bullet.png")
-    print("rendered logo.png track.png bar.png entry.png bullet.png")
+    mark().save(HERE / "mark.png")
+    print("rendered logo.png track.png bar.png entry.png bullet.png mark.png")

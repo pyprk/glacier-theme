@@ -13,5 +13,8 @@
     <entry name="Period" type="Int">
       <default>480</default>
     </entry>
+    <entry name="Glitch" type="Bool">
+      <default>true</default>
+    </entry>
   </group>
 </kcfg>

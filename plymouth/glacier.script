@@ -47,6 +47,14 @@ fun set_bar(fraction, offset)
 
 set_bar(0.01, 0);
 
+# ---- DEADFRAME mark, bottom centre ---------------------------------------
+
+mark.image = Image("mark.png");
+mark.sprite = Sprite(mark.image);
+mark.sprite.SetPosition(cx - mark.image.GetWidth() / 2,
+                        Window.GetY() + Window.GetHeight() - mark.image.GetHeight() - 40, 10);
+mark.sprite.SetOpacity(0);
+
 # ---- animation ----------------------------------------------------------
 
 frame = 0;
@@ -61,6 +69,14 @@ fun refresh_callback()
     logo.sprite.SetOpacity(fade);
     track.sprite.SetOpacity(fade);
     bar.sprite.SetOpacity(fade);
+    mark.sprite.SetOpacity(fade * 0.8);
+
+    # the logo twitches sideways for two frames every ~3.5 s
+    j = frame % 173;
+    if (j == 0 || j == 1)
+      logo.sprite.SetX(logo.x + 3);
+    else
+      logo.sprite.SetX(logo.x);
 
     # messages fade out on their own if nothing refreshes them for ~8 s
     if (message.shown_at && frame - message.shown_at > 400)

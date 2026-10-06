@@ -10,10 +10,29 @@ WallpaperItem {
     readonly property bool followTime: configuration.FollowTime
     readonly property int period: Math.max(60, configuration.Period)
     readonly property int fps: 20
+    readonly property bool glitch: configuration.Glitch
 
     property real phase: 0
     property bool covered: false
     property real hour: 0
+
+    // ---- the touch of chaos: one ridge skips sideways for two frames ------
+    property real glitchRow: -1
+    property real glitchShift: 0
+
+    Timer {
+        running: root.glitch && root.animate && !root.covered
+        repeat: true
+        interval: 15000 + Math.random() * 25000
+        onTriggered: {
+            interval = 15000 + Math.random() * 25000;
+            root.glitchRow = 18 + Math.floor(Math.random() * 44);
+            root.glitchShift = (Math.random() < 0.5 ? -1 : 1) * (0.006 + Math.random() * 0.008);
+            glitchHeal.restart();
+        }
+    }
+
+    Timer { id: glitchHeal; interval: 2000 / root.fps; onTriggered: root.glitchRow = -1 }
 
     // ---- palettes by time of day ----------------------------------------
     readonly property var palettes: ({
@@ -150,6 +169,8 @@ WallpaperItem {
         property color lineNear: root.paletteColor("lineNear")
         property color linePeak: root.paletteColor("linePeak")
         property color dotCol: root.paletteColor("dot")
+        property real glitchRow: root.glitchRow
+        property real glitchShift: root.glitchShift
 
         fragmentShader: Qt.resolvedUrl("../shaders/terrain.frag.qsb")
 
@@ -162,5 +183,16 @@ WallpaperItem {
         Behavior on lineNear { ColorAnimation { duration: 2000 } }
         Behavior on linePeak { ColorAnimation { duration: 2000 } }
         Behavior on dotCol { ColorAnimation { duration: 2000 } }
+    }
+
+    DeadframeMark {
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: 28 * u
+        u: Math.min(2, Math.max(1, root.height / 1080))
+        color: root.paletteColor("lineNear")
+        blinkColor: root.paletteColor("linePeak")
+        frameOpacity: 0.45
+        opacity: 0.55
     }
 }

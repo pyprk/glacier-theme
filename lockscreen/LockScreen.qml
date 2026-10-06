@@ -140,10 +140,13 @@ Item {
         anchors.topMargin: root.height * 0.14
         spacing: 0
 
-        Text {
+        GlitchText {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatTime(root.now, "h:mm AP").split(" ")[0]
             color: root.textColor
+            tearColor: root.ice
+            u: root.u
+            every: 30000
             font.family: "IBM Plex Sans"
             font.weight: Font.Light
             font.pixelSize: 112 * root.u
@@ -304,5 +307,145 @@ Item {
         }
     }
 
+    DeadframeMark {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 32 * root.u
+        u: root.u
+        color: root.dimColor
+        blinkColor: root.ice
+        opacity: root.uiVisible ? 0.8 : 0.45
+        Behavior on opacity { NumberAnimation { duration: 400 } }
+    }
+
     Component.onCompleted: password.forceActiveFocus()
+
+    // ---- inline components (this file must stay self-contained) -----------
+
+    // Text with a rare tear: every `every` ms (±40 %), a horizontal slice of
+    // the glyphs jumps sideways in the tear colour for ~80 ms, then heals.
+    component GlitchText: Item {
+        id: gt
+
+        property alias text: src.text
+        property alias font: src.font
+        property alias color: src.color
+        property color tearColor: "#6fcdf5"
+        property real u: 1
+        property int every: 30000
+
+        property bool torn: false
+        property real sy: 0
+        property real sh: 0
+        property real dx: 0
+
+        implicitWidth: src.implicitWidth
+        implicitHeight: src.implicitHeight
+        width: implicitWidth
+        height: implicitHeight
+
+        Text { id: src; visible: !gt.torn }
+
+        Item {
+            visible: gt.torn
+            clip: true
+            width: gt.width
+            height: gt.sy
+            Text { text: src.text; font: src.font; color: src.color }
+        }
+
+        Item {
+            visible: gt.torn
+            clip: true
+            x: gt.dx
+            y: gt.sy
+            width: gt.width
+            height: gt.sh
+            Text { y: -gt.sy; text: src.text; font: src.font; color: gt.tearColor }
+        }
+
+        Item {
+            visible: gt.torn
+            clip: true
+            y: gt.sy + gt.sh
+            width: gt.width
+            height: Math.max(0, gt.height - gt.sy - gt.sh)
+            Text { y: -(gt.sy + gt.sh); text: src.text; font: src.font; color: src.color }
+        }
+
+        Timer {
+            running: true
+            repeat: true
+            interval: gt.every * (0.6 + Math.random() * 0.8)
+            onTriggered: {
+                interval = gt.every * (0.6 + Math.random() * 0.8);
+                gt.sy = Math.round(gt.height * (0.15 + Math.random() * 0.6));
+                gt.sh = Math.round(gt.height * (0.08 + Math.random() * 0.14));
+                gt.dx = (Math.random() < 0.5 ? -1 : 1) * Math.round((4 + Math.random() * 8) * gt.u);
+                gt.torn = true;
+                heal.restart();
+            }
+        }
+
+        Timer { id: heal; interval: 80; onTriggered: gt.torn = false }
+    }
+
+    // DEADFRAME mark: letter-spaced mono text in a thin frame whose
+    // bottom-right corner is missing; the corner blinks back now and then.
+    component DeadframeMark: Item {
+        id: dm
+
+        property real u: 1
+        property color color: "#7c8ba3"
+        property color blinkColor: "#6fcdf5"
+        property real frameOpacity: 0.55
+        property int every: 40000
+
+        readonly property real lw: Math.max(1, Math.round(u))
+        readonly property real pad: 10 * u
+
+        implicitWidth: label.implicitWidth + 2 * pad
+        implicitHeight: label.implicitHeight + 1.3 * pad
+        width: implicitWidth
+        height: implicitHeight
+
+        Text {
+            id: label
+            anchors.centerIn: parent
+            anchors.horizontalCenterOffset: 1.5 * dm.u
+            text: "DEADFRAME"
+            color: dm.color
+            font.family: "IBM Plex Mono"
+            font.pixelSize: 10 * dm.u
+            font.letterSpacing: 3 * dm.u
+        }
+
+        Rectangle { x: 0; y: 0; width: parent.width; height: dm.lw; color: dm.color; opacity: dm.frameOpacity }
+        Rectangle { x: 0; y: 0; width: dm.lw; height: parent.height; color: dm.color; opacity: dm.frameOpacity }
+        Rectangle { x: parent.width - dm.lw; y: 0; width: dm.lw; height: parent.height * 0.5; color: dm.color; opacity: dm.frameOpacity }
+        Rectangle { x: 0; y: parent.height - dm.lw; width: parent.width * 0.7; height: dm.lw; color: dm.color; opacity: dm.frameOpacity }
+
+        Rectangle {
+            id: corner
+            x: parent.width - dm.lw
+            y: parent.height - dm.lw
+            width: dm.lw
+            height: dm.lw
+            color: dm.blinkColor
+            opacity: 0
+        }
+
+        Timer {
+            running: true
+            repeat: true
+            interval: dm.every * (0.5 + Math.random())
+            onTriggered: {
+                interval = dm.every * (0.5 + Math.random());
+                corner.opacity = 1;
+                off.restart();
+            }
+        }
+
+        Timer { id: off; interval: 120; onTriggered: corner.opacity = 0 }
+    }
 }

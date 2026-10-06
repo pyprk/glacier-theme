@@ -48,9 +48,11 @@ PlasmoidItem {
             RowLayout {
                 spacing: 8
 
-                Text {
+                GlitchText {
                     text: Qt.formatTime(root.now, root.use12h ? "h:mm AP" : "HH:mm").split(" ")[0]
                     color: Kirigami.Theme.textColor
+                    tearColor: Kirigami.Theme.hoverColor
+                    every: 75000
                     font.family: "IBM Plex Sans"
                     font.weight: Font.Light
                     font.pixelSize: 84

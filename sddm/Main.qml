@@ -56,10 +56,13 @@ Rectangle {
         anchors.topMargin: root.height * 0.14
         spacing: 0
 
-        Text {
+        GlitchText {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Qt.formatTime(root.now, "h:mm AP").split(" ")[0]
             color: root.textColor
+            tearColor: root.ice
+            u: root.u
+            every: 30000
             font.family: "IBM Plex Sans"
             font.weight: Font.Light
             font.pixelSize: 112 * root.u
@@ -245,6 +248,16 @@ Rectangle {
                 }
             }
         }
+    }
+
+    DeadframeMark {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 32 * root.u
+        u: root.u
+        color: root.dimColor
+        blinkColor: root.ice
+        opacity: 0.8
     }
 
     Component.onCompleted: (user.text.length > 0 ? password : user).forceActiveFocus()

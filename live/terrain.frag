@@ -16,6 +16,8 @@ layout(std140, binding = 0) uniform buf {
     vec4 lineNear;
     vec4 linePeak;
     vec4 dotCol;
+    float glitchRow;
+    float glitchShift;
 };
 layout(binding = 1) uniform sampler2D field;
 
@@ -119,6 +121,7 @@ void main() {
         if (py > base + gate) { covered = true; break; }
         float spread = 1.05 + 0.95 * t;
         float u = PEAK_X + (px - PEAK_X) / spread;
+        if (abs(float(i) - glitchRow) < 0.5) u += glitchShift;   // one ridge skips sideways for a frame or two
         float env = envU(u) * ENVR[i];
         if (py < base - amp * HF * env - gate) continue;
         float fr = t * SPAN - phase;
