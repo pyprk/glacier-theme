@@ -1,0 +1,44 @@
+// Glacier fastfetch banner
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "file",
+        "source": "~/.config/fastfetch/glacier.txt",
+        "color": {
+            "1": "38;2;86;164;245",
+            "2": "38;2;216;225;238"
+        },
+        "padding": { "top": 1, "left": 2, "right": 4 }
+    },
+    "display": {
+        "separator": "  ",
+        "color": {
+            "keys": "38;2;124;139;163",
+            "title": "38;2;86;164;245",
+            "output": "38;2;216;225;238"
+        },
+        "key": { "width": 8 }
+    },
+    "modules": [
+        "break",
+        { "type": "title", "format": "{user-name-colored}{at-symbol-colored}{host-name-colored}", "color": { "user": "38;2;111;205;245", "at": "38;2;124;139;163", "host": "38;2;111;205;245" } },
+        { "type": "custom", "format": "\u001b[38;2;42;53;71m────────────────────────────────" },
+        { "type": "os", "key": "OS", "format": "{pretty-name}" },
+        { "type": "kernel", "key": "KERNEL", "format": "{release}" },
+        { "type": "de", "key": "DE", "format": "{pretty-name} {version}" },
+        { "type": "wm", "key": "WM", "format": "{pretty-name} ({protocol-name})" },
+        { "type": "shell", "key": "SHELL", "format": "{pretty-name} {version}" },
+        { "type": "terminal", "key": "TERM", "format": "{pretty-name}" },
+        { "type": "uptime", "key": "UPTIME" },
+        { "type": "packages", "key": "PKGS" },
+        { "type": "custom", "format": "\u001b[38;2;42;53;71m────────────────────────────────" },
+        { "type": "cpu", "key": "CPU", "format": "{name} ({cores-logical})" },
+        { "type": "gpu", "key": "GPU", "format": "{name}", "hideType": "integrated" },
+        { "type": "memory", "key": "MEM" },
+        { "type": "disk", "key": "DISK", "folders": "/:/mnt/data", "format": "{size-used} / {size-total} ({size-percentage}) {mountpoint}" },
+        { "type": "battery", "key": "BATT" },
+        { "type": "localip", "key": "IP", "showIpv6": false, "showPrefixLen": false, "compact": true },
+        "break",
+        { "type": "colors", "symbol": "circle", "paddingLeft": 10 }
+    ]
+}

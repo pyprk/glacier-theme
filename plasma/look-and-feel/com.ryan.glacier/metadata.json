@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{"Name": "ryan"}],
+        "Description": "Clean dark slate with ice-blue accents",
+        "Id": "com.ryan.glacier",
+        "License": "MIT",
+        "Name": "Glacier",
+        "Version": "1.0"
+    },
+    "X-Plasma-APIVersion": "2"
+}

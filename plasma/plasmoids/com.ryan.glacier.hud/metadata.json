@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{"Name": "ryan"}],
+        "Category": "System Information",
+        "Description": "Clock and system readout for the Glacier theme",
+        "Icon": "glacier-launcher",
+        "Id": "com.ryan.glacier.hud",
+        "License": "MIT",
+        "Name": "Glacier HUD",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

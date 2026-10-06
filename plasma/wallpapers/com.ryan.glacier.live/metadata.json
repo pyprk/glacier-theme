@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "Plasma/Wallpaper",
+    "KPlugin": {
+        "Authors": [{"Name": "ryan"}],
+        "Description": "Drifting wireframe terrain that follows the time of day",
+        "Icon": "glacier-launcher",
+        "Id": "com.ryan.glacier.live",
+        "License": "MIT",
+        "Name": "Glacier Live",
+        "Version": "1.0"
+    },
+    "X-KDE-ParentApp": "org.kde.plasmashell"
+}

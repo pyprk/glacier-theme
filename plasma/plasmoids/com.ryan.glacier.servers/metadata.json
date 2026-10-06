@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{"Name": "ryan"}],
+        "Category": "System Information",
+        "Description": "Game server and homelab status for the Glacier theme",
+        "Icon": "glacier-launcher",
+        "Id": "com.ryan.glacier.servers",
+        "License": "MIT",
+        "Name": "Glacier Servers",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
