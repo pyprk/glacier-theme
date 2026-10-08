@@ -11,6 +11,13 @@ var launchers = [
     "applications:systemsettings.desktop"
 ];
 
+// With no screen attached (headless, over SSH) Plasma reports zero screens:
+// the panel loop below would create nothing and screenGeometry() is empty, so
+// the old panels would be stripped and the widgets dumped at 0,0. Do nothing.
+if (screenCount === 0) {
+    print("glacier layout: no screens, leaving the layout alone");
+} else {
+
 var old = panels();
 for (var i = 0; i < old.length; i++) {
     old[i].remove();
@@ -38,7 +45,7 @@ for (var s = 0; s < screenCount; s++) {
     clock.writeConfig("showDate", true);
     clock.writeConfig("dateDisplayFormat", 1); // beside the time
     clock.writeConfig("dateFormat", "custom");
-    clock.writeConfig("customDateFormat", "ddd d MMM");
+    clock.writeConfig("customDateFormat", "ddd d MMM "); // trailing space: Plasma 6.5 puts no gap before the time
     clock.writeConfig("autoFontAndSize", false);
     clock.writeConfig("fontFamily", "IBM Plex Mono");
     clock.writeConfig("fontSize", 11);
@@ -84,3 +91,5 @@ for (var d = 0; d < all.length; d++) {
     }
     desk.addWidget("com.ryan.glacier.servers", geo.width - hudWidth - 48, 72 + hudHeight + 16, hudWidth, 230);
 }
+
+} // screenCount
